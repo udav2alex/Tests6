@@ -13,7 +13,10 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-import com.geekbrains.tests.R
+import com.geekbrains.tests.*
+import com.geekbrains.tests.RESOURCE_ID_SEARCH_EDIT_TEXT
+import com.geekbrains.tests.NUMBER_OF_RESULTS_REAL
+import com.geekbrains.tests.TEST_NUMBER_OF_RESULTS_ZERO
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -46,7 +49,7 @@ class BehaviorTest {
         context.startActivity(intent)
 
         //Ждем, когда приложение откроется на смартфоне чтобы начать тестировать его элементы
-        uiDevice.wait(Until.hasObject(By.pkg(packageName).depth(0)), TIMEOUT)
+        uiDevice.wait(Until.hasObject(By.pkg(packageName).depth(0)), TIMEOUT_START_ACTIVITY)
     }
 
     //Убеждаемся, что приложение открыто. Для этого достаточно найти на экране любой элемент
@@ -54,7 +57,7 @@ class BehaviorTest {
     @Test
     fun test_MainActivityIsStarted() {
         //Через uiDevice находим editText
-        val editText = uiDevice.findObject(By.res(packageName, "searchEditText"))
+        val editText = uiDevice.findObject(By.res(packageName, RESOURCE_ID_SEARCH_EDIT_TEXT))
         //Проверяем на null
         Assert.assertNotNull(editText)
     }
@@ -63,9 +66,9 @@ class BehaviorTest {
     @Test
     fun test_SearchIsPositive() {
         //Через uiDevice находим editText
-        val editText = uiDevice.findObject(By.res(packageName, "searchEditText"))
+        val editText = uiDevice.findObject(By.res(packageName, RESOURCE_ID_SEARCH_EDIT_TEXT))
         //Устанавливаем значение
-        editText.text = "UiAutomator"
+        editText.text = STRING_SEARCH_QUERY
         //Отправляем запрос через Espresso
         Espresso.onView(ViewMatchers.withId(R.id.searchEditText))
             .perform(ViewActions.pressImeActionButton())
@@ -74,12 +77,12 @@ class BehaviorTest {
         //Это будет означать, что сервер вернул ответ с какими-то данными, то есть запрос отработал.
         val changedText =
             uiDevice.wait(
-                Until.findObject(By.res(packageName, "totalCountTextView")),
-                TIMEOUT
+                Until.findObject(By.res(packageName, RESOURCE_ID_TOTAL_COUNT_TEXT_VIEW)),
+                TIMEOUT_SEARCH_ON_SERVER
             )
         //Убеждаемся, что сервер вернул корректный результат. Обратите внимание, что количество
         //результатов может варьироваться во времени, потому что количество репозиториев постоянно меняется.
-        Assert.assertEquals(changedText.text.toString(), "Number of results: 668")
+        Assert.assertEquals(changedText.text.toString(), NUMBER_OF_RESULTS_REAL)
     }
 
     //Убеждаемся, что DetailsScreen открывается
@@ -87,10 +90,7 @@ class BehaviorTest {
     fun test_OpenDetailsScreen() {
         //Находим кнопку
         val toDetails: UiObject2 = uiDevice.findObject(
-            By.res(
-                packageName,
-                "toDetailsActivityButton"
-            )
+            By.res(packageName, RESOURCE_ID_TO_DETAIL_ACTIVITY_BUTTON)
         )
         //Кликаем по ней
         toDetails.click()
@@ -99,18 +99,14 @@ class BehaviorTest {
         //Это будет означать, что DetailsScreen открылся и это поле видно на экране.
         val changedText =
             uiDevice.wait(
-                Until.findObject(By.res(packageName, "totalCountTextView")),
-                TIMEOUT
+                Until.findObject(By.res(packageName, RESOURCE_ID_TOTAL_COUNT_TEXT_VIEW)),
+                TIMEOUT_SEARCH_ON_SERVER
             )
         //Убеждаемся, что поле видно и содержит предполагаемый текст.
         //Обратите внимание, что текст должен быть "Number of results: 0",
         //так как мы кликаем по кнопке не отправляя никаких поисковых запросов.
         //Чтобы проверить отображение определенного количества репозиториев,
         //вам в одном и том же методе нужно отправить запрос на сервер и открыть DetailsScreen.
-        Assert.assertEquals(changedText.text, "Number of results: 0")
-    }
-
-    companion object {
-        private const val TIMEOUT = 5000L
+        Assert.assertEquals(changedText.text, TEST_NUMBER_OF_RESULTS_ZERO)
     }
 }

@@ -9,8 +9,10 @@ import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.geekbrains.tests.BuildConfig
-import com.geekbrains.tests.R
+import com.geekbrains.tests.*
+import com.geekbrains.tests.NUMBER_OF_RESULTS_REAL
+import com.geekbrains.tests.STRING_SEARCH_QUERY
+import com.geekbrains.tests.TEST_NUMBER
 import com.geekbrains.tests.view.search.MainActivity
 import org.hamcrest.Matcher
 import org.junit.After
@@ -31,23 +33,24 @@ class MainActivityEspressoTest {
     @Test
     fun activitySearch_IsWorking() {
         onView(withId(R.id.searchEditText)).perform(click())
-        onView(withId(R.id.searchEditText)).perform(replaceText("algol"), closeSoftKeyboard())
+        onView(withId(R.id.searchEditText))
+            .perform(replaceText(STRING_SEARCH_QUERY), closeSoftKeyboard())
         onView(withId(R.id.searchEditText)).perform(pressImeActionButton())
 
         if (BuildConfig.TYPE == MainActivity.FAKE) {
-            onView(withId(R.id.totalCountTextView)).check(matches(withText("Number of results: 42")))
+            onView(withId(R.id.totalCountTextView)).check(matches(withText(TEST_NUMBER)))
         } else {
             onView(isRoot()).perform(delay())
-            onView(withId(R.id.totalCountTextView)).check(matches(withText("Number of results: 2283")))
+            onView(withId(R.id.totalCountTextView)).check(matches(withText(NUMBER_OF_RESULTS_REAL)))
         }
     }
 
     private fun delay(): ViewAction? {
         return object : ViewAction {
             override fun getConstraints(): Matcher<View> = isRoot()
-            override fun getDescription(): String = "wait for $2 seconds"
+            override fun getDescription(): String = "wait for ${TIMEOUT_SEARCH_ON_SERVER / 1000} seconds"
             override fun perform(uiController: UiController, v: View?) {
-                uiController.loopMainThreadForAtLeast(2000)
+                uiController.loopMainThreadForAtLeast(TIMEOUT_SEARCH_ON_SERVER)
             }
         }
     }
